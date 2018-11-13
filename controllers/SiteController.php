@@ -9,9 +9,29 @@ use yii\web\Response;
 use yii\filters\VerbFilter;
 use app\models\LoginForm;
 use app\models\ContactForm;
+use app\models\EntryForm;
 
 class SiteController extends Controller
 {
+
+ public function actionEntry()
+    {
+        $model = new EntryForm;
+
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            // validar los datos recibidos en el modelo
+
+            // aquí haz algo significativo con el modelo ...
+
+            return $this->render('entry-confirm', ['model' => $model]);
+        } else {
+            // la página es mostrada inicialmente o hay algún error de validación
+            return $this->render('entry', ['model' => $model]);
+        }
+    }
+
+
+
         public function actionSay($mensaje="Hola mundo"){
         $mensaje="luis-prueba";
         return $this->render('say',['mensaje'=>$mensaje]);
@@ -129,4 +149,45 @@ class SiteController extends Controller
     {
         return $this->render('about');
     }
+
+
+
+
+    /*Cracion de formulario*/
+    public function actionCreate()
+{
+    $a=new User;
+    $b=new Info;
+
+    $this->performAjaxValidation(array($a,$b));
+    if(isset($_POST['User'],$_POST['Info']))
+    {
+        // populate input data to $a and $b
+        $a->attributes=$_POST['User'];
+        $b->attributes=$_POST['Info'];
+        
+        // validate BOTH $a and $b
+        $valid=$a->validate();
+        $valid=$b->validate() && $valid;
+        
+        if($valid)
+        {
+            // use false parameter to disable validation
+            $a->save(false);
+            $b->save(false);
+            
+            $this->redirect('index');
+        }
+    }
+    $this->render('create',array('a'=>$a,'b'=>$b));
+}
+
+protected function performAjaxValidation($models)
+{
+    if(isset($_POST['ajax']) && $_POST['ajax']==='user-form')
+    {
+        echo CActiveForm::validate($models);
+        Yii::app()->end();
+    }
+}
 }
